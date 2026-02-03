@@ -5,8 +5,9 @@ const APP_SHELL = [
     BASE_URL,
     withBase("index.html"),
     withBase("manifest.webmanifest"),
-    withBase("icons/icon-192.svg"),
-    withBase("icons/icon-512.svg")
+    withBase("favicon.png"),
+    withBase("icons/icon-192.png"),
+    withBase("icons/icon-512.png")
 ];
 
 self.addEventListener("install", (event) => {
