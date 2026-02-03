@@ -1,4 +1,4 @@
-const CACHE_NAME = "img2dmg-cache-v1";
+const CACHE_NAME = "img2dmg-cache-v2";
 const BASE_URL = new URL(self.registration.scope).pathname;
 const withBase = (path) => new URL(path, self.registration.scope).pathname;
 const APP_SHELL = [
@@ -9,12 +9,20 @@ const APP_SHELL = [
     withBase("icons/icon-192.png"),
     withBase("icons/icon-512.png")
 ];
+const FORCE_REFRESH = new Set([
+    withBase("manifest.webmanifest"),
+    withBase("favicon.png"),
+    withBase("icons/icon-192.png"),
+    withBase("icons/icon-512.png")
+]);
 
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches
             .open(CACHE_NAME)
-            .then((cache) => cache.addAll(APP_SHELL))
+            .then((cache) =>
+                cache.addAll(APP_SHELL.map((path) => new Request(path, { cache: "reload" })))
+            )
             .then(() => self.skipWaiting())
     );
 });
@@ -33,6 +41,21 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
     const { request } = event;
     if (request.method !== "GET") {
+        return;
+    }
+
+    const requestUrl = new URL(request.url);
+
+    if (FORCE_REFRESH.has(requestUrl.pathname)) {
+        event.respondWith(
+            fetch(request, { cache: "reload" })
+                .then((response) => {
+                    const copy = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+                    return response;
+                })
+                .catch(() => caches.match(request))
+        );
         return;
     }
 
