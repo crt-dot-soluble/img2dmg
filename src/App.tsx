@@ -655,7 +655,7 @@ const App = () => {
             ) : null}
 
             <footer className="footer">
-                <p>Offline-ready. No uploads. Just a DMG palette and your pixels.</p>
+                <p>Copyright © 2026 wtns.sh</p>
             </footer>
         </div>
     );
